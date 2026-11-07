@@ -52,6 +52,11 @@ RUN_LOPO = True          # full leave-one-patient-out (E7)
 USE_DRIVE = True
 
 import os, sys
+for _s in (sys.stdout, sys.stderr):                       # Windows consoles/pipes: print ±, Δ, α safely
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 KAGGLE_INPUT = os.environ.get("PDFS_KAGGLE_INPUT", "/kaggle/input")
 ON_KAGGLE = os.path.isdir(KAGGLE_INPUT) and "PDFS_DATA_DIR" not in os.environ
 try:
@@ -80,7 +85,8 @@ elif IN_COLAB and USE_DRIVE:
 elif IN_COLAB:
     DATA_DIR, OUT_DIR = "/content/figshare_brain_tumor", "/content/results"
 else:                                                        # local run (main.py / Main.m)
-    DATA_DIR, OUT_DIR = os.path.join(_HERE, "data"), os.path.join(_HERE, "results")
+    # The dataset ships with the repository in dataset/, so no download is needed.
+    DATA_DIR, OUT_DIR = os.path.join(_HERE, "dataset"), os.path.join(_HERE, "results")
 print("Data folder:   ", DATA_DIR)
 print("Results folder:", OUT_DIR)
 SEED = 42
@@ -339,7 +345,8 @@ summary = {
     "patients_with_more_than_one_label": int(mixed), "exact_duplicates_removed": int(len(dup)),
 }
 print(json.dumps(summary, indent=2))
-json.dump(summary, open(f"{OUT_DIR}/dataset_summary.json", "w"), indent=2)
+with open(f"{OUT_DIR}/dataset_summary.json", "w", encoding="utf-8") as fh:
+    json.dump(summary, fh, indent=2)
 
 fig, ax = plt.subplots(1, 4, figsize=(11, 2.8), gridspec_kw={"width_ratios": [2, 1, 1, 1]})
 ax[0].hist(spp, bins=30, color="#4c72b0"); ax[0].set_xlabel("Slices per patient"); ax[0].set_ylabel("Patients")
@@ -632,7 +639,7 @@ def plot_cm(cm, title, path):
 
 def save(df, name):
     df.to_csv(f"{OUT_DIR}/{name}.csv", index=False)
-    with open(f"{OUT_DIR}/{name}.md", "w") as fh:
+    with open(f"{OUT_DIR}/{name}.md", "w", encoding="utf-8") as fh:
         fh.write("| " + " | ".join(df.columns) + " |\n|" + "---|" * len(df.columns) + "\n")
         for row in df.itertuples(index=False):
             fh.write("| " + " | ".join(str(v) for v in row) + " |\n")
@@ -977,7 +984,7 @@ ax.set_yticks(yy, [s["name"] for s in ss], fontsize=7); ax.set_xlabel("Macro-F1 
 ax.set_xlim(max(0, min(s["f1"] for s in ss) - 10), 100); plt.tight_layout()
 plt.savefig(f"{OUT_DIR}/figures/macro_f1_all.png"); plt.show()
 
-with open(f"{OUT_DIR}/settings.json", "w") as fh:
+with open(f"{OUT_DIR}/settings.json", "w", encoding="utf-8") as fh:
     json.dump({k: v for k, v in globals().items() if k.isupper() and isinstance(v, (int, float, str, bool, list))
                and all(isinstance(i, (int, float, str)) for i in (v if isinstance(v, list) else []))}, fh, indent=2)
 print("All tables and figures saved to", OUT_DIR)

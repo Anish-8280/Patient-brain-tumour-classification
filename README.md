@@ -93,8 +93,10 @@ PDFS(α) = B / (S + α·P), where B is the between-class variance.
 | Glioma | 1,426 | 89 |
 | Pituitary | 930 | 62 |
 
-The code downloads the dataset into `data/` automatically. If the download is blocked, get the zip from Figshare or
-the [Kaggle mirror](https://www.kaggle.com/datasets/ashkhagan/figshare-brain-tumor-dataset) and put it in `data/`;
+The full dataset is included in this repository under `dataset/` (3,064 `.mat` slices plus `cvind.mat`), so
+`main.py` runs offline with no download. If the `dataset/` folder is missing, the code downloads the data into it
+automatically; if that download is blocked, get the zip from Figshare or the
+[Kaggle mirror](https://www.kaggle.com/datasets/ashkhagan/figshare-brain-tumor-dataset) and put it in `dataset/`;
 it is unzipped automatically.
 
 ---
@@ -150,7 +152,7 @@ Everything is written to `results/` and zipped as `results.zip`:
 ├── main.py                       # complete pipeline: data → features → E1–E9 → results
 ├── PDFS_Brain_Tumor_LOPO.ipynb   # same code as a Colab / Kaggle notebook
 ├── requirements.txt
-└── data/                         # dataset (downloaded automatically)
+└── dataset/                      # Figshare dataset, included (no download needed)
 ```
 
 ---

@@ -1,0 +1,13 @@
+numpy
+pandas
+scipy
+scikit-learn
+scikit-image
+opencv-python
+matplotlib
+joblib
+h5py
+requests
+# Optional: ResNet-18 comparison (E8). Without it, that experiment is skipped.
+# torch
+# torchvision
