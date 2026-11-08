@@ -68,9 +68,17 @@ try:
     _HERE = os.path.dirname(os.path.abspath(__file__))     # running as main.py
 except NameError:
     _HERE = os.getcwd()                                      # running as a notebook
+# The dataset ships with the repository in dataset/. When it is next to this file (local run, or
+# Colab/Kaggle after `git clone`), it is used directly: no download and no Google Drive needed.
+BUNDLED_DATA = os.path.join(_HERE, "dataset")
+HAS_BUNDLED_DATA = os.path.isdir(os.path.join(BUNDLED_DATA, "data"))
 if "PDFS_DATA_DIR" in os.environ:
     DATA_DIR = os.environ["PDFS_DATA_DIR"]
     OUT_DIR = os.environ.get("PDFS_OUT_DIR", os.path.join(_HERE, "results"))
+elif HAS_BUNDLED_DATA:
+    print("Using the dataset bundled with the repository")
+    DATA_DIR = BUNDLED_DATA
+    OUT_DIR = "/kaggle/working/results" if ON_KAGGLE else os.path.join(_HERE, "results")
 elif ON_KAGGLE:
     # Kaggle: attach the dataset with "+ Add Input" (it appears under /kaggle/input, read-only);
     # it is copied to the writable working folder and unzipped there. Results: /kaggle/working/results
@@ -84,9 +92,8 @@ elif IN_COLAB and USE_DRIVE:
     OUT_DIR = "/content/drive/MyDrive/figshare_results"
 elif IN_COLAB:
     DATA_DIR, OUT_DIR = "/content/figshare_brain_tumor", "/content/results"
-else:                                                        # local run (main.py / Main.m)
-    # The dataset ships with the repository in dataset/, so no download is needed.
-    DATA_DIR, OUT_DIR = os.path.join(_HERE, "dataset"), os.path.join(_HERE, "results")
+else:                                                        # local run without dataset/: downloads into it
+    DATA_DIR, OUT_DIR = BUNDLED_DATA, os.path.join(_HERE, "results")
 print("Data folder:   ", DATA_DIR)
 print("Results folder:", OUT_DIR)
 SEED = 42
@@ -143,8 +150,11 @@ from sklearn.svm import SVC
 warnings.filterwarnings("ignore")
 plt.rcParams.update({"figure.dpi": 110, "font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
 rng_global = np.random.default_rng(SEED)
-N_JOBS = -1
-print("CPU cores:", os.cpu_count())
+# Parallel workers. Each worker holds its own copy of the feature matrix, so using every core can run
+# out of RAM on a 16 GB laptop (workers get killed). Capped at 6; override with PDFS_N_JOBS. Results
+# do not depend on this number, only the run time does.
+N_JOBS = int(os.environ.get("PDFS_N_JOBS", min(os.cpu_count() or 1, 6)))
+print("CPU cores:", os.cpu_count(), "| parallel workers:", N_JOBS)
 
 # ---- resume support: every finished experiment is saved; a re-run after a crash skips it ----
 import gc, pickle
