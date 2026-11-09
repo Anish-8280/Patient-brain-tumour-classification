@@ -16,21 +16,34 @@ Patient-grouped stratified 5-fold CV × 3 repeats (15 runs), macro-F1 (%, mean �
 
 | Method | Macro-F1 |
 |---|---|
-| Baseline, **image-level CV** (leaky, for comparison only) | 88.31 ± 1.77 |
-| Baseline: Fisher top-400 features + RBF-SVM | **80.82 ± 4.26** |
-| Raw pixels + PCA (no feature extraction) | 77.05 ± 2.72 |
-| PDFS feature selection (proposed) | 80.08 ± 4.33 |
-| Patient-balanced SVM weights (proposed) | 80.07 ± 4.31 |
-| Baseline + patient-level margin-weighted fusion | **85.70 ± 5.56** |
-| ResNet-18 fine-tuned (deep learning, comparison only, 5 runs) | 91.83 ± 3.13 |
+| Baseline, **image-level CV** (leaky, for comparison only) | 89.13 ± 2.54 |
+| Baseline: Fisher top-400 features + RBF-SVM | **80.62 ± 2.80** |
+| Raw pixels + PCA (no feature extraction) | 76.20 ± 3.87 |
+| PDFS feature selection (proposed) | 80.24 ± 2.69 |
+| Patient-balanced SVM weights (proposed) | 80.11 ± 2.86 |
+| Baseline + patient-level margin-weighted fusion | **85.95 ± 4.51** |
+| ResNet-18 fine-tuned (deep learning, comparison only, 5 runs) | 91.83 ± 3.13 * |
+
+Numbers from a full run of `main.py` with the bundled dataset (Python 3.11.9, scikit-learn 1.9.1,
+scikit-image 0.26.0, NumPy 2.4.6, OpenCV 5.0.0, SciPy 1.17.1). Other package versions can shift results slightly.
+\* ResNet-18 needs a GPU and was not part of this run; its number is from an earlier GPU run.
+
+Leave-one-patient-out (233 folds), macro-F1 (%):
+
+| Method | Slice level | Patient level |
+|---|---|---|
+| Baseline: Fisher (k tuned) + class weights | 81.06 ± 1.91 | 83.64 ± 2.42 |
+| PDFS (α, k tuned) + patient weights (proposed) | 80.89 ± 1.62 | 85.43 ± 2.25 |
 
 **Findings**
-- Patient leakage inflates macro-F1 by **7.5 points** (88.31 → 80.82).
-- Handcrafted features beat raw pixels by **3.8 points**; LBP is the strongest single family.
-- **Combining an unseen patient's slices** raises macro-F1 to **85.7%**.
-- The proposed **PDFS** and **patient-balanced weighting** did **not** improve on the Fisher baseline. This negative
-  result is confirmed by leave-one-patient-out (LOPO) evaluation and analysed in the report.
-- Meningioma is the hardest class: the main error is glioma predicted as meningioma.
+- Patient leakage inflates macro-F1 by **8.5 points** (89.13 → 80.62).
+- Handcrafted features beat raw pixels by **4.4 points**; LBP is the strongest single family (80.21).
+- **Combining an unseen patient's slices** raises macro-F1 to **86.0%**.
+- The proposed **PDFS** and **patient-balanced weighting** did **not** improve on the Fisher baseline in
+  cross-validation. In LOPO, the proposed method is level with the baseline per slice (−0.18 points) and 1.7 points
+  higher per patient, but neither difference is significant (patient-bootstrap 95% CI −0.77 to +4.37, P = 0.088).
+- Meningioma is the hardest class (F1 69.3 vs 83.5 glioma and 89.0 pituitary): the main error is glioma predicted as
+  meningioma.
 
 ---
 
